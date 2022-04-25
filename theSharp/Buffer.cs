@@ -1,6 +1,8 @@
-﻿using GleamTech.VideoUltimate;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
+using GleamTech.VideoUltimate;
 using System.Threading.Tasks;
 
 namespace theSharp
@@ -29,7 +31,7 @@ namespace theSharp
         {
             if (VideoBuffer.Count < 4 && CanBeRead)
             {
-                AsyncUpdate();
+                AsyncUpdate();  
             }
             return VideoBuffer.Dequeue();
         }
@@ -43,7 +45,7 @@ namespace theSharp
         {
             for (int i = 0; i < 16; i++)
             {
-                if (reader.Read())
+                if(reader.Read())
                 {
                     Bitmap target = reader.GetFrame();
 
