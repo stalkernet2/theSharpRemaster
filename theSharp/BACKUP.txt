@@ -1,0 +1,154 @@
+private void the_the(string del)
+        {
+            string sharp, space, dot, qShF, qDtF;
+            string qSh = "#", qSp = " ", qDt = ".", qShH = "\u2588", qDtH = "▓";
+            _width = 0;
+            _height = 0;
+
+            time = DateTime.Now;
+            mul = 25 * Convert.ToInt32(trackBar1.Value);
+            int val = trackBar2.Value;
+            if (checkBox2.Checked == false)
+            {
+                val = 6;
+            }
+            int mulP = mul + mul / val;
+            int mulM = mul - mul / val;
+
+            if (checkBox4.Checked == true)
+            {
+                qShF = qShH;
+                qDtF = qDtH;
+            }
+            else
+            {
+                qShF = qSh;
+                qDtF = qDt;
+            }
+
+            if (checkBox1.Checked != true)
+            {
+                sharp = qShF;
+                space = qSp;
+                
+            }
+            else
+            {
+                sharp = qSp;
+                space = qShF;
+            }
+
+            if (checkBox2.Checked == true)
+            {
+                dot = qDtF;
+            }
+            else
+            {
+                dot = qSp;
+                mulP = mul;
+            }
+
+            textBox5.Text = "";
+            
+            using (Bitmap RoR = new Bitmap(textBox4.Text + del))
+            {
+                switch (swFlag) // Определение размеров картинки
+                {
+                    case 1:
+                        if (textBox1.Text != "")
+                        {
+                            _width = Convert.ToInt32(RoR.Width * (Convert.ToDouble(textBox1.Text) / 100));
+                            _height = Convert.ToInt32(RoR.Height * (Convert.ToDouble(textBox1.Text) / 100));
+                        }
+                        else
+                        {
+                            _width = _oldWidth;
+                            _height = _oldHeight;
+                        }
+                        break;
+                    case 2:
+                        if (textBox2.Text != "" && textBox3.Text != "")
+                        {
+                            _width = Convert.ToInt32(textBox2.Text);
+                            _height = Convert.ToInt32(textBox3.Text);
+                        }
+                        else
+                        {
+                            _width = _oldWidth;
+                            _height = _oldHeight;
+                        }
+                        break;
+                    default:
+                        _width = RoR.Width;
+                        _height = RoR.Height;
+                        break;
+                }
+
+                _width = Convert.ToInt32(Convert.ToDouble(_width) * 2);
+
+                if (checkBox3.Checked == true && _width > 1024) // Уменьшение до 1024 ширины
+                {
+                    int Nwidth = _width;
+                    double local;
+                    for (local = 1.25; Nwidth > 1024; local += 0.25)
+                    {
+                        Nwidth = Convert.ToInt32(_width / local);
+                    }
+
+                    _width = Nwidth;
+                    _height =  Convert.ToInt32(_height / local);
+                }
+
+                Bitmap RaR = new Bitmap(RoR, _width, _height);
+
+                string temp = "";
+                string screen = "";
+                fast = "";
+                char[] separators = new char[] { ' ', ',', '=', '[', ']' };
+
+                for (int y = 0; y < _height; y++) // Вычислительный блок
+                {
+                    for (int x = 0; x < _width; x++)
+                    {
+                        string s = Convert.ToString(RaR.GetPixel(x, y));
+
+                        string[] str = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (Convert.ToInt32(str[4]) >= mulP || Convert.ToInt32(str[6]) >= mulP || Convert.ToInt32(str[8]) >= mulP)
+                        {
+                            temp += space;
+                        }
+                        else if (Convert.ToInt32(str[4]) > mulM && Convert.ToInt32(str[4]) < mulP || Convert.ToInt32(str[6]) > mulM && Convert.ToInt32(str[6]) < mulP || Convert.ToInt32(str[8]) > mulM && Convert.ToInt32(str[8]) < mulP)
+                        {
+                            temp += dot;
+                        }
+                        else
+                        {
+                            temp += sharp;
+                        }
+
+                        if (x == _width / 2 || x == _width -1) // Облегчение temp очереди
+                        {
+                            screen += temp;
+                            temp = "";
+                        }
+                    }
+                    screen += Environment.NewLine;
+                    _oldHeight = _height;
+                    _oldWidth = _width;
+                    if (y == _height / 2 || y == _height - 1) // Облегчение screen очереди
+                    {
+                        fast += screen;
+                        screen = "";
+                    }
+                }
+                textBox5.Text = fast; // Вывод
+                label5.Text = Convert.ToString(DateTime.Now - time) + "\n" + "\nNativeHeight:" + RoR.Height + "\nNativeWidth:" + RoR.Width;
+            }
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            timer1.Stop();
+        }
+    }
