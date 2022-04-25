@@ -89,28 +89,31 @@ namespace theSharp
             {
                 if (Translator.Width != 0 && Translator.Height != 0)
                 {
-                    saveFileDialog1.Filter = "Image Files(*.jpg)|*.jpg|Image Files(*.png)|*.png|All files (*.*)|*.*";
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
 
-                    if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                    saveFileDialog.Filter = "Image Files(*.jpg)|*.jpg|Image Files(*.png)|*.png";
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        float zc = FontSizeBar.Value;
+                        float fontSizeFactor = FontSizeBar.Value;
 
-                        int _Ewidth = Convert.ToInt32(Convert.ToDouble(Translator.Width)  * zc); //* 1.018f
-                        int _Eheight = Convert.ToInt32(Convert.ToDouble(Translator.Height)  * zc);//* 1.052f
+                        int width = Convert.ToInt32(Convert.ToDouble(Translator.Width) * fontSizeFactor); //* 1.018f
+                        int height = Convert.ToInt32(Convert.ToDouble(Translator.Height) * fontSizeFactor);//* 1.052f
+
                         try
                         {
-                            label3.Text = "\nHeight:" + _Eheight + "\nWidth:" + _Ewidth;
+                            label3.Text = "\nHeight:" + height + "\nWidth:" + width;
 
-                            using (Bitmap saveImage = new Bitmap(_Ewidth, _Eheight * 2))
+                            using (Bitmap saveImage = new Bitmap(width, height * 2))
                             {
                                 Graphics image = Graphics.FromImage(saveImage);
 
                                 image.Clear(Color.White);
-                                image.DrawString(OutPutBox.Text, new Font("Consolas", 1.35f * zc), new SolidBrush(Color.Black), -6, -2);
+                                image.DrawString(OutPutBox.Text, new Font("Consolas", 1.35f * fontSizeFactor), new SolidBrush(Color.Black), -6, -2);
 
-                                if (saveFileDialog1.FileName != "")
+                                if (saveFileDialog.FileName != "")
                                 {
-                                    saveImage.Save(saveFileDialog1.FileName, ImageFormat.Jpeg);
+                                    saveImage.Save(saveFileDialog.FileName, Format.Get(saveFileDialog.FilterIndex));
                                 }
                                 saveImage.Dispose();
                             }
@@ -131,13 +134,20 @@ namespace theSharp
 
         private void LoadButton_Click(object sender, EventArgs e) // Кнопка открытия файла
         {
-            OutPutTimer.Stop();
-            IsVideo = false;
+            
+            if (OutPutTimer.Enabled)
+            {
+                OutPutTimer.Stop();
+                IsVideo = false;
+            }
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
 
             PathBox.Text = "";
-            openFileDialog1.Filter = "Image Files(*.jpg; *.png)|*.jpg; *.png| Video Files(*.mp4)|*.mp4";
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                PathBox.Text = openFileDialog1.FileName;
+            openFileDialog.Filter = "Image Files(*.jpg; *.png)|*.jpg; *.png| Video Files(*.mp4)|*.mp4";
+            
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                PathBox.Text = openFileDialog.FileName;
             else
                 OutPutTimer.Start();
         }
@@ -225,7 +235,7 @@ namespace theSharp
 
         private void DetailsBar_Scroll(object sender, EventArgs e)
         {
-            if(!IsVideo)
+            if (!IsVideo)
                 StartTranslate(Buff.ImageBuffer);
         }
 

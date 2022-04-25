@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.Drawing;
+using System.Text;
 
 namespace theSharp
 {
@@ -116,7 +116,7 @@ namespace theSharp
                 ProgressValue = 0;
                 return buildfast.ToString();
             }
-            catch 
+            catch
             {
                 return "Сломался, слишком быстро дергал ползунки";
             }
@@ -134,7 +134,7 @@ namespace theSharp
 
             int Width;
             int Height;
-            switch (swFlag) 
+            switch (swFlag)
             {
                 case 1:
                     if (Textbox != "")
