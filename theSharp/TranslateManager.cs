@@ -10,61 +10,61 @@ namespace theSharp
         public int Height = 0;
         public double ProgressValue { get; private set; }
 
-        private int OldWidth, OldHeight;
+        private Size _oldSize;
 
-        private int CenterPos; // mul
-        private int GreaterCenterPos; // mulP
-        private int SmallerCenterPos; // mulM
-        private int AdvGreaterCenterPos; // mulPA
-        private int AdvSmallerCenterPos; //mulMA
+        private int _centerPos; // mul
+        private int _greaterCenterPos; // mulP
+        private int _smallerCenterPos; // mulM
+        private int _advGreaterCenterPos; // mulPA
+        private int _advSmallerCenterPos; //mulMA
 
-        private int DetailsValue; // val
+        private int _detailsValue; // val
 
-        private char[] Alphabet;
+        private char[] _alphabet;
 
-        private DateTime Time;
+        private DateTime _time;
 
-        private bool BaseGraphic;
-        private bool Details;
+        private bool _baseGraphic;
+        private bool _details;
 
         public void InitSymbols(int brightnessBar, int detailsBar, bool detailsBox, bool baseGraphicBox, bool inversionBox)
         {
-            Alphabet = new char[5] { '#', ' ', '.', ' ', ' ' }; // reset
+            _alphabet = new char[5] { '#', ' ', '.', ' ', ' ' }; // reset
 
-            BaseGraphic = baseGraphicBox;
-            Details = detailsBox;
+            _baseGraphic = baseGraphicBox;
+            _details = detailsBox;
 
-            CenterPos = 25 * brightnessBar;
-            DetailsValue = 6;
+            _centerPos = 25 * brightnessBar;
+            _detailsValue = 6;
 
             if (detailsBox)
-                DetailsValue = detailsBar;
+                _detailsValue = detailsBar;
 
-            GreaterCenterPos = CenterPos + CenterPos / DetailsValue;
-            SmallerCenterPos = CenterPos - CenterPos / DetailsValue;
+            _greaterCenterPos = _centerPos + _centerPos / _detailsValue;
+            _smallerCenterPos = _centerPos - _centerPos / _detailsValue;
 
-            AdvGreaterCenterPos = GreaterCenterPos - (GreaterCenterPos - SmallerCenterPos) / 3;
-            AdvSmallerCenterPos = SmallerCenterPos + (GreaterCenterPos - SmallerCenterPos) / 3;
+            _advGreaterCenterPos = _greaterCenterPos - (_greaterCenterPos - _smallerCenterPos) / 3;
+            _advSmallerCenterPos = _smallerCenterPos + (_greaterCenterPos - _smallerCenterPos) / 3;
 
-            GreaterCenterPos *= 3;
-            SmallerCenterPos *= 3;
-            AdvGreaterCenterPos *= 3;
-            AdvSmallerCenterPos *= 3;
+            _greaterCenterPos *= 3;
+            _smallerCenterPos *= 3;
+            _advGreaterCenterPos *= 3;
+            _advSmallerCenterPos *= 3;
 
             if (baseGraphicBox)
             {
-                Alphabet = new char[5] { '\u2588', '▓', '▒', '░', ' ' };
+                _alphabet = new char[5] { '\u2588', '▓', '▒', '░', ' ' };
             }
 
             if (!detailsBox)
             {
-                Alphabet[Alphabet.Length / 2] = ' ';
-                GreaterCenterPos = CenterPos;
+                _alphabet[_alphabet.Length / 2] = ' ';
+                _greaterCenterPos = _centerPos;
             }
 
             if (inversionBox)
             {
-                Array.Reverse(Alphabet);
+                Array.Reverse(_alphabet);
             }
         }
 
@@ -72,7 +72,7 @@ namespace theSharp
         {
             try
             {
-                Time = DateTime.Now;
+                _time = DateTime.Now;
                 StringBuilder buildfast = new StringBuilder();
 
                 Width = target.Width;
@@ -87,24 +87,24 @@ namespace theSharp
 
                         char temp;
 
-                        if (rgb >= GreaterCenterPos)
-                            temp = Alphabet[4];
-                        else if (rgb > SmallerCenterPos && rgb < GreaterCenterPos) // Сглаживание
+                        if (rgb >= _greaterCenterPos)
+                            temp = _alphabet[4];
+                        else if (rgb > _smallerCenterPos && rgb < _greaterCenterPos) // Сглаживание
                         {
-                            if (advGraphicBox && Details && BaseGraphic) // Улучшенное сглаживание
+                            if (advGraphicBox && _details && _baseGraphic) // Улучшенное сглаживание
                             {
-                                if (rgb > SmallerCenterPos && rgb < AdvSmallerCenterPos)
-                                    temp = Alphabet[1];
-                                else if (rgb > AdvSmallerCenterPos && rgb < AdvGreaterCenterPos)
-                                    temp = Alphabet[2];
+                                if (rgb > _smallerCenterPos && rgb < _advSmallerCenterPos)
+                                    temp = _alphabet[1];
+                                else if (rgb > _advSmallerCenterPos && rgb < _advGreaterCenterPos)
+                                    temp = _alphabet[2];
                                 else
-                                    temp = Alphabet[3];
+                                    temp = _alphabet[3];
                             }
                             else // Обычное сглаживание
-                                temp = Alphabet[2];
+                                temp = _alphabet[2];
                         }
                         else
-                            temp = Alphabet[0];
+                            temp = _alphabet[0];
 
                         buildfast.Append(temp);
                     }
@@ -144,8 +144,8 @@ namespace theSharp
                     }
                     else
                     {
-                        Width = OldWidth;
-                        Height = OldHeight;
+                        Width = _oldSize.Width;
+                        Height = _oldSize.Height;
                     }
                     break;
                 case 2:
@@ -156,8 +156,8 @@ namespace theSharp
                     }
                     else
                     {
-                        Width = OldWidth;
-                        Height = OldHeight;
+                        Width = _oldSize.Width;
+                        Height = _oldSize.Height;
                     }
                     break;
                 default:
@@ -165,22 +165,24 @@ namespace theSharp
                     Height = onResize.Height;
                     break;
             }
-            OldHeight = Height;
-            OldWidth = Width;
+            _oldSize.Height = Height;
+            _oldSize.Width = Width;
 
             return new Bitmap(onResize, (int)((float)(Width) * 2.0675f), Height); //2.0675f
         }
+
         /// <summary>
         /// Примимает <paramref name="tik"></paramref> кадров и возвращает затраченое время для 1 кадра и для <paramref name="tik"></paramref> кадров, а также размеры изображения
         /// </summary>
         /// 
         /// <returns>Возвращает затраченное время и размеры</returns>
         /// 
+
         public string DebugTime(double tik)
         {
-            return Convert.ToString(DateTime.Now - Time) + "\n" + "Вывод " + tik + " кадров: "
-                        + Convert.ToDouble((DateTime.Now - Time).TotalMilliseconds) * tik / 1000 + "\nNativeSize:"
-                        + OldHeight + "x" + OldWidth;
+            return Convert.ToString(DateTime.Now - _time) + "\n" + "Вывод " + tik + " кадров: "
+                        + Convert.ToDouble((DateTime.Now - _time).TotalMilliseconds) * tik / 1000 + "\nNativeSize:"
+                        + _oldSize.Height + "x" + _oldSize.Width;
         }
     }
 }

@@ -10,28 +10,28 @@ namespace theSharp
         public Bitmap ImageBuffer;
         public double FrameRate;
 
-        private Queue<Bitmap> VideoBuffer = new Queue<Bitmap>();
+        private Queue<Bitmap> _videoBuffer = new Queue<Bitmap>();
 
-        private VideoFrameReader reader;
-        private bool CanBeRead = false;
+        private VideoFrameReader _reader;
+        private bool _canBeRead = false;
 
         public Buffer() { }
 
         public Buffer(string file)
         {
-            reader = new VideoFrameReader(file);
-            FrameRate = reader.FrameRate;
+            _reader = new VideoFrameReader(file);
+            FrameRate = _reader.FrameRate;
 
-            CanBeRead = true;
+            _canBeRead = true;
         }
 
         public Bitmap Get()
         {
-            if (VideoBuffer.Count < 4 && CanBeRead)
+            if (_videoBuffer.Count < 4 && _canBeRead)
             {
                 AsyncUpdate();
             }
-            return VideoBuffer.Dequeue();
+            return _videoBuffer.Dequeue();
         }
 
         private async void AsyncUpdate()
@@ -43,16 +43,16 @@ namespace theSharp
         {
             for (int i = 0; i < 16; i++)
             {
-                if (reader.Read())
+                if (_reader.Read())
                 {
-                    Bitmap target = reader.GetFrame();
+                    Bitmap target = _reader.GetFrame();
 
                     Bitmap ReSized = new Bitmap(target, new Size((int)(target.Size.Width * 0.4), (int)(target.Size.Height * 0.4)));
-                    VideoBuffer.Enqueue(ReSized);
+                    _videoBuffer.Enqueue(ReSized);
                 }
                 else
                 {
-                    CanBeRead = false;
+                    _canBeRead = false;
                     break;
                 }
             }

@@ -9,12 +9,12 @@ namespace theSharp
     {
         #region Поля
 
-        private string textemp;
-        private int swFlag = 0;
-        private bool IsVideo = false;
+        private string _textemp;
+        private int _swFlag = 0;
+        private bool _isVideo = false;
 
-        private Translator Translator = new Translator();
-        private Buffer Buff;
+        private Translator _translator = new Translator();
+        private Buffer _buff;
 
         public static string Fast = "";
         #endregion
@@ -28,12 +28,12 @@ namespace theSharp
 
         private async void AsyncConvert(Bitmap target, bool advGraphicBox)
         {
-            Fast = await Task.Run(() => Translator.Translate(target, advGraphicBox));
+            Fast = await Task.Run(() => _translator.Translate(target, advGraphicBox));
         }
 
         private Task StartTranslate(Bitmap target)
         {
-            Translator.InitSymbols(BrightnessBar.Value, DetailsBar.Value, DetailsBox.Checked, BaseGraphicBox.Checked, InversionBox.Checked);
+            _translator.InitSymbols(BrightnessBar.Value, DetailsBar.Value, DetailsBox.Checked, BaseGraphicBox.Checked, InversionBox.Checked);
 
             AsyncConvert(target, AdvGraphicBox.Checked);
             return Task.CompletedTask;
@@ -46,25 +46,25 @@ namespace theSharp
             {
                 if (PathBox.Text.EndsWith(".png") || PathBox.Text.EndsWith(".jpg"))
                 {
-                    Buff = new Buffer();
+                    _buff = new Buffer();
                     StartButton.Enabled = false;
                     using (Bitmap onResize = new Bitmap(PathBox.Text))
                     {
-                        if (Buff.ImageBuffer == null || PathBox.Text != textemp || onResize.Height * (Convert.ToDouble(SizeBox.Text) / 100) != 1)
+                        if (_buff.ImageBuffer == null || PathBox.Text != _textemp || onResize.Height * (Convert.ToDouble(SizeBox.Text) / 100) != 1)
                         {
-                            Buff.ImageBuffer = Translator.ImgCurse(swFlag, SizeBox.Text, WidthBox.Text, HeightBox.Text, onResize);
-                            textemp = PathBox.Text;
+                            _buff.ImageBuffer = _translator.ImgCurse(_swFlag, SizeBox.Text, WidthBox.Text, HeightBox.Text, onResize);
+                            _textemp = PathBox.Text;
                         }
                     }
                     OutPutTimer.Start();
-                    await StartTranslate(Buff.ImageBuffer);
+                    await StartTranslate(_buff.ImageBuffer);
                 }
                 else // Видево
                 {
-                    Buff = new Buffer(PathBox.Text);
+                    _buff = new Buffer(PathBox.Text);
 
-                    IsVideo = true;
-                    OutPutTimer.Interval = (int)(1000 / Buff.FrameRate * 0.95);
+                    _isVideo = true;
+                    OutPutTimer.Interval = (int)(1000 / _buff.FrameRate * 0.95);
                     OutPutTimer.Start();
                 }
             }
@@ -86,27 +86,29 @@ namespace theSharp
         {
             if (OutPutBox.Text != "")
             {
-                if (Translator.Width != 0 && Translator.Height != 0)
+                if (_translator.Width != 0 && _translator.Height != 0)
                 {
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
+
                     saveFileDialog.Filter = "Image Files(*.jpg)|*.jpg|Image Files(*.png)|*.png";
 
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        float zc = FontSizeBar.Value;
+                        float fontSizeFactor = FontSizeBar.Value;
 
-                        int _Ewidth = Convert.ToInt32(Convert.ToDouble(Translator.Width) * zc); //* 1.018f
-                        int _Eheight = Convert.ToInt32(Convert.ToDouble(Translator.Height) * zc);//* 1.052f
+                        int width = Convert.ToInt32(Convert.ToDouble(_translator.Width) * fontSizeFactor); //* 1.018f
+                        int height = Convert.ToInt32(Convert.ToDouble(_translator.Height) * fontSizeFactor);//* 1.052f
+
                         try
                         {
-                            label3.Text = "\nHeight:" + _Eheight + "\nWidth:" + _Ewidth;
+                            label3.Text = "\nHeight:" + height + "\nWidth:" + width;
 
-                            using (Bitmap saveImage = new Bitmap(_Ewidth, _Eheight * 2))
+                            using (Bitmap saveImage = new Bitmap(width, height * 2))
                             {
                                 Graphics image = Graphics.FromImage(saveImage);
 
                                 image.Clear(Color.White);
-                                image.DrawString(OutPutBox.Text, new Font("Consolas", 1.35f * zc), new SolidBrush(Color.Black), -6, -2);
+                                image.DrawString(OutPutBox.Text, new Font("Consolas", 1.35f * fontSizeFactor), new SolidBrush(Color.Black), -6, -2);
 
                                 if (saveFileDialog.FileName != "")
                                 {
@@ -117,7 +119,7 @@ namespace theSharp
                         }
                         catch (Exception qe)
                         {
-                            if (Translator.Width >= 32768 || Translator.Height >= 32768)
+                            if (_translator.Width >= 32768 || _translator.Height >= 32768)
                                 Debug.MesError("Картинка слишком большая");
                             else
                                 Debug.MesError("Что-то сломалось \n" + qe);
@@ -134,7 +136,7 @@ namespace theSharp
             if (OutPutTimer.Enabled)
             {
                 OutPutTimer.Stop();
-                IsVideo = false;
+                _isVideo = false;
             }
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -152,28 +154,28 @@ namespace theSharp
 
         private void OutPutTimer_Tick(object sender, EventArgs e) // Обработка и вывод изображения по времени
         {
-            if (IsVideo)
+            if (_isVideo)
             {
                 try
                 {
-                    Bitmap cursedImage = Translator.ImgCurse(swFlag, SizeBox.Text, WidthBox.Text, HeightBox.Text, Buff.Get());
+                    Bitmap cursedImage = _translator.ImgCurse(_swFlag, SizeBox.Text, WidthBox.Text, HeightBox.Text, _buff.Get());
                     StartTranslate(cursedImage);
                 }
                 catch
                 {
                     OutPutTimer.Stop();
-                    IsVideo = false;
+                    _isVideo = false;
                 }
             }
             else
             {
-                progressBar1.Value = (int)Translator.ProgressValue;
+                progressBar1.Value = (int)_translator.ProgressValue;
             }
             if (Fast != "")
             {
                 OutPutBox.Text = Fast;
                 Fast = "";
-                label5.Text = Translator.DebugTime(Buff.FrameRate);
+                label5.Text = _translator.DebugTime(_buff.FrameRate);
                 StartButton.Enabled = true;
             }
         }
@@ -193,7 +195,7 @@ namespace theSharp
         #region Текстбоксы 
         private void SizeBox_TextChanged(object sender, EventArgs e)
         {
-            swFlag = 1;
+            _swFlag = 1;
 
             WidthBox.Text = "";
             HeightBox.Text = "";
@@ -206,7 +208,7 @@ namespace theSharp
 
         private void WidthHeight_TextChanged(object sender, EventArgs e)
         {
-            swFlag = 2;
+            _swFlag = 2;
 
             SizeBox.Text = "";
         }
@@ -229,16 +231,18 @@ namespace theSharp
 
         private void DetailsBar_Scroll(object sender, EventArgs e)
         {
-            if (!IsVideo)
-                StartTranslate(Buff.ImageBuffer);
+            ChangeImage();
         }
 
         private void BrightnessBar_Scroll(object sender, EventArgs e)
         {
-            if (!IsVideo)
-                StartTranslate(Buff.ImageBuffer);
+            ChangeImage();
         }
-
+        private void ChangeImage()
+        {
+            if (!_isVideo && _buff != null)
+                StartTranslate(_buff.ImageBuffer);
+        }
         #endregion
     }
 }
